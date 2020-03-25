@@ -61,6 +61,7 @@ class Actor(Base):
     notify_users: bool
     short_description: str
     slug: str
+    capability: Optional[Entity] = None
     created_date: Optional[datetime] = None
     last_modified_date: Optional[datetime] = None
     first_activity_date: Optional[datetime] = None

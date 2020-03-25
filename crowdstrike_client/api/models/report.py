@@ -30,11 +30,11 @@ class Report(Base):
     id: int
     name: str
     slug: str
-    actors: List[Actor]
-    tags: List[Entity]
-    target_countries: List[Entity]
-    target_industries: List[Entity]
-    motivations: List[Entity]
+    actors: Optional[List[Actor]] = None
+    tags: Optional[List[Entity]] = None
+    target_countries: Optional[List[Entity]] = None
+    target_industries: Optional[List[Entity]] = None
+    motivations: Optional[List[Entity]] = None
     created_date: Optional[datetime] = None
     last_modified_date: Optional[datetime] = None
     active: Optional[bool] = None

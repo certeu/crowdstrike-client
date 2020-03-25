@@ -13,7 +13,7 @@ class Base(BaseModel):
 class Entity(Base):
     """CrowdStrike API entity model."""
 
-    _id: int
+    id: int
     name: Optional[str] = None
     slug: Optional[str] = None
     value: Optional[str] = None
