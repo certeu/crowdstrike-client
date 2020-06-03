@@ -14,6 +14,12 @@ class HTTPClient:
     """HTTP client"""
 
     _ARG_HEADERS = "headers"
+    _ARG_TIMEOUT = "timeout"
+
+    _DEFAULT_TIMEOUT_CONNECT_SEC = 15
+    _DEFAULT_TIMEOUT_READ_SEC = 120
+
+    _DEFAULT_TIMEOUTS = (_DEFAULT_TIMEOUT_CONNECT_SEC, _DEFAULT_TIMEOUT_READ_SEC)
 
     def __init__(
         self, base_url: str, default_headers: Optional[Dict[str, str]] = None
@@ -48,17 +54,24 @@ class HTTPClient:
 
         url = self._get_url(path)
 
+        timeout = kwargs.pop(self._ARG_TIMEOUT, None)
+        if timeout is None:
+            timeout = self._DEFAULT_TIMEOUTS
+
         request_headers = kwargs.pop(self._ARG_HEADERS, None)
         request_headers = self._get_request_headers(request_headers)
 
         self.log.debug(
-            "_request url: %s, request_headers: %s, kwargs: %s",
+            "_request url: %s, request_headers: %s, timeout: %s, kwargs: %s",
             url,
             request_headers,
+            timeout,
             kwargs,
         )
 
-        response = requests.request(method, url, headers=request_headers, **kwargs)
+        response = requests.request(
+            method, url, headers=request_headers, timeout=timeout, **kwargs
+        )
 
         self.log.debug(
             "_request response status code: %s, response_headers: %s",
