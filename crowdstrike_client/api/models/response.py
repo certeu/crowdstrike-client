@@ -2,7 +2,8 @@
 """CrowdStrike API response model module."""
 
 import logging
-from typing import Any, Generic, List, Optional, Type, TypeVar
+from typing import Any, Generic, List, Mapping, Optional, Type, TypeVar
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
@@ -10,6 +11,7 @@ from pydantic import BaseModel, parse_obj_as, validator
 from pydantic.generics import GenericModel
 
 from crowdstrike_client.api.models.base import Base
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,7 @@ class Response(GenericModel, Generic[T]):
     meta: Meta
     errors: List[Error]
     resources: List[T]
+    next_page: Optional[str] = None
 
     @validator("resources", pre=True)
     def if_resources_none_return_empty_list(cls, resources: Any):
@@ -61,7 +64,22 @@ class Response(GenericModel, Generic[T]):
     ) -> "Response[T]":
         """Parse response object to Response model."""
         # TODO: Is the 'Response[resource_type]' type hint correct?
-        return parse_obj_as(Response[resource_type], response.json())  # type: ignore
+        result = parse_obj_as(Response[resource_type], response.json())  # type: ignore
+
+        next_page = response.headers.get("next-page", None)
+        if next_page is not None:
+            result.next_page = next_page
+
+        return result
+
+    def get_next_page_params(self) -> Optional[Mapping[str, List[str]]]:
+        """Return the request parameters for the next page"""
+        next_page = self.next_page
+        if next_page is None or not next_page:
+            return None
+
+        enc_payload = urlparse(next_page).query
+        return parse_qs(enc_payload)
 
 
 class ErrorResponse(BaseModel):

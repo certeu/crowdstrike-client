@@ -20,6 +20,8 @@ class Indicators:
     _COMBINED_ENDPOINT = "/intel/combined/indicators/v1"
     _ENTITIES_ENDPOINT = "/intel/entities/indicators/GET/v1"
 
+    _SORT_DEEP_PAGINATION = "_marker"
+
     def __init__(self, client: HTTPClient) -> None:
         """Initialize CrowdStrike Intel Indicators API."""
         self.log = logging.getLogger(__name__)
@@ -34,7 +36,17 @@ class Indicators:
         fql_filter: Optional[str] = None,
         q: Optional[str] = None,
         include_deleted: Optional[bool] = None,
+        deep_pagination: bool = False,
     ) -> Optional[Mapping[str, Any]]:
+        if deep_pagination:
+            offset = None
+
+            if limit is None:
+                limit = 10000
+
+            if sort != Indicators._SORT_DEEP_PAGINATION:
+                sort = Indicators._SORT_DEEP_PAGINATION
+
         params: Mapping[str, Any] = {
             "offset": offset,
             "limit": limit,
@@ -59,13 +71,14 @@ class Indicators:
         fql_filter: Optional[str] = None,
         q: Optional[str] = None,
         include_deleted: Optional[bool] = None,
+        deep_pagination: bool = False,
     ) -> Response[str]:
         """Query list of indicator IDs that match provided FQL filters."""
-        path = self._QUERIES_ENDPOINT
         params = self._get_request_params(
-            offset, limit, sort, fql_filter, q, include_deleted
+            offset, limit, sort, fql_filter, q, include_deleted, deep_pagination
         )
 
+        path = self._QUERIES_ENDPOINT
         response = self.client.get(path, params=params)
         check_200_response(response)
         return Response.parse_http_response(response, str)
@@ -78,13 +91,14 @@ class Indicators:
         fql_filter: Optional[str] = None,
         q: Optional[str] = None,
         include_deleted: Optional[bool] = None,
+        deep_pagination: bool = False,
     ) -> Response[Indicator]:
         """Query list of indicators that match provided FQL filters."""
-        path = self._COMBINED_ENDPOINT
         params = self._get_request_params(
-            offset, limit, sort, fql_filter, q, include_deleted
+            offset, limit, sort, fql_filter, q, include_deleted, deep_pagination
         )
 
+        path = self._COMBINED_ENDPOINT
         response = self.client.get(path, params=params)
         check_200_response(response)
         return Response.parse_http_response(response, Indicator)
